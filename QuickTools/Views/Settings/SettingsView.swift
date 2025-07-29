@@ -703,11 +703,12 @@ struct UpdateStatusSection: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             self.isChecking = false
             
-            // For demo: if current version is 1.0.0, show update available
-            if currentVersion == "1.0.0" {
+            // Compare with latest version from appcast (1.1.1 currently)
+            let latestVersion = "1.1.1"
+            if self.isNewerVersion(latest: latestVersion, current: currentVersion) {
                 self.updateAvailable = true
-                self.availableVersion = "1.1.1"
-                self.updateMessage = "Update available: v1.1.1"
+                self.availableVersion = latestVersion
+                self.updateMessage = "Update available: v\(latestVersion)"
             } else {
                 self.updateAvailable = false
                 self.updateMessage = "You're up to date"
@@ -733,6 +734,27 @@ struct UpdateStatusSection: View {
         formatter.dateStyle = .short
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+    
+    private func isNewerVersion(latest: String, current: String) -> Bool {
+        // Simple semantic version comparison (major.minor.patch)
+        let latestComponents = latest.split(separator: ".").compactMap { Int($0) }
+        let currentComponents = current.split(separator: ".").compactMap { Int($0) }
+        
+        let maxCount = max(latestComponents.count, currentComponents.count)
+        
+        for i in 0..<maxCount {
+            let latestComponent = i < latestComponents.count ? latestComponents[i] : 0
+            let currentComponent = i < currentComponents.count ? currentComponents[i] : 0
+            
+            if latestComponent > currentComponent {
+                return true
+            } else if latestComponent < currentComponent {
+                return false
+            }
+        }
+        
+        return false // versions are equal
     }
 }
 
