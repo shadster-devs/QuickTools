@@ -26,13 +26,13 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string></string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/shadster-devs/QuickTools/main/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>ha4xfstJ/bcxxzD6awrj3GjuG0z3CFSicDOkPYnJTXQ=</string>
-	<key>SUEnableAutomaticChecks</key>
-	<true/>
 	<key>SUScheduledCheckInterval</key>
 	<integer>86400</integer>
 </dict>
-</plist> 
+</plist>
