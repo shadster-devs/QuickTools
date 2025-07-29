@@ -28,7 +28,7 @@ jobs:
         
     - name: Install Sparkle Tools
       run: |
-        brew install sparkle
+        brew install sparkle jq
         echo "/opt/homebrew/Caskroom/sparkle/2.7.1/bin" >> $GITHUB_PATH
         
     - name: Extract version from tag
@@ -67,7 +67,7 @@ jobs:
           
     - name: Export Archive
       run: |
-        # Create export options plist
+        # Create export options plist with hardened runtime
         cat > ExportOptions.plist << EOF
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -79,6 +79,16 @@ jobs:
           <string>${{ secrets.TEAM_ID }}</string>
           <key>signingStyle</key>
           <string>manual</string>
+          <key>signingCertificate</key>
+          <string>Developer ID Application</string>
+          <key>compileBitcode</key>
+          <false/>
+          <key>destination</key>
+          <string>export</string>
+          <key>stripSwiftSymbols</key>
+          <true/>
+          <key>thinning</key>
+          <string>&lt;none&gt;</string>
         </dict>
         </plist>
         EOF
@@ -87,6 +97,45 @@ jobs:
           -archivePath ./build/QuickTools.xcarchive \
           -exportPath ./build \
           -exportOptionsPlist ExportOptions.plist
+          
+    - name: Re-sign app with hardened runtime for notarization
+      run: |
+        cd ./build
+        
+        echo "🔧 Re-signing all frameworks with hardened runtime..."
+        # Find and sign all frameworks
+        find QuickTools.app -name "*.framework" -type d | while read framework; do
+          echo "Signing framework: $framework"
+          codesign --force --verify --verbose --timestamp \
+            --options runtime \
+            --entitlements ../QuickTools/Resources/QuickTools.entitlements \
+            --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+            "$framework"
+        done
+        
+        echo "🔧 Re-signing all dylibs and executables..."
+        # Sign all dylibs and executables in frameworks
+        find QuickTools.app -type f \( -name "*.dylib" -o -perm +111 \) | while read binary; do
+          if file "$binary" | grep -q "Mach-O"; then
+            echo "Signing binary: $binary"
+            codesign --force --verify --verbose --timestamp \
+              --options runtime \
+              --entitlements ../QuickTools/Resources/QuickTools.entitlements \
+              --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+              "$binary" || echo "Warning: Could not sign $binary"
+          fi
+        done
+        
+        echo "🔧 Re-signing main app bundle..."
+        codesign --force --verify --verbose --timestamp \
+          --options runtime \
+          --entitlements ../QuickTools/Resources/QuickTools.entitlements \
+          --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+          QuickTools.app
+          
+        echo "✅ Verifying final signature..."
+        codesign --verify --deep --strict --verbose=2 QuickTools.app
+        spctl -a -t exec -vv QuickTools.app
           
     - name: Create ZIP for distribution
       run: |
@@ -105,14 +154,36 @@ jobs:
         echo "🍎 Submitting app to Apple for notarization..."
         
         # Submit for notarization
-        xcrun notarytool submit "./build/QuickTools-${{ steps.version.outputs.version }}.zip" \
+        SUBMISSION_ID=$(xcrun notarytool submit "./build/QuickTools-${{ steps.version.outputs.version }}.zip" \
           --key AuthKey.p8 \
           --key-id "${{ secrets.NOTARIZE_APP_STORE_CONNECT_API_KEY_ID }}" \
           --issuer "${{ secrets.NOTARIZE_APP_STORE_CONNECT_ISSUER_ID }}" \
           --wait \
-          --timeout 1h
+          --timeout 1h \
+          --output-format json | jq -r '.id')
         
-        echo "✅ Notarization completed successfully!"
+        echo "Submission ID: $SUBMISSION_ID"
+        
+        # Check the status and get detailed info if failed
+        STATUS=$(xcrun notarytool info "$SUBMISSION_ID" \
+          --key AuthKey.p8 \
+          --key-id "${{ secrets.NOTARIZE_APP_STORE_CONNECT_API_KEY_ID }}" \
+          --issuer "${{ secrets.NOTARIZE_APP_STORE_CONNECT_ISSUER_ID }}" \
+          --output-format json | jq -r '.status')
+        
+        echo "Final Status: $STATUS"
+        
+        if [ "$STATUS" = "Accepted" ]; then
+          echo "✅ Notarization completed successfully!"
+        else
+          echo "❌ Notarization failed with status: $STATUS"
+          echo "📋 Getting detailed error log..."
+          xcrun notarytool log "$SUBMISSION_ID" \
+            --key AuthKey.p8 \
+            --key-id "${{ secrets.NOTARIZE_APP_STORE_CONNECT_API_KEY_ID }}" \
+            --issuer "${{ secrets.NOTARIZE_APP_STORE_CONNECT_ISSUER_ID }}"
+          exit 1
+        fi
         
     - name: Staple notarization to app
       run: |
