@@ -34,6 +34,12 @@ sed -i '' "s/static let appVersion = \"[^\"]*\"/static let appVersion = \"$VERSI
 echo "📝 Updating version in Info.plist..."
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" QuickTools/Resources/Info.plist
 
+# Generate build number from version (e.g., 1.1.5 -> 115)
+echo "📝 Updating build number in Info.plist..."
+BUILD_NUMBER=$(echo "$VERSION" | sed 's/\.//g')  # Remove dots: 1.1.5 -> 115
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" QuickTools/Resources/Info.plist
+echo "   Version: $VERSION, Build: $BUILD_NUMBER"
+
 # Commit version changes
 echo "💾 Committing version changes..."
 git add QuickTools/Models/AppConstants.swift QuickTools/Resources/Info.plist
