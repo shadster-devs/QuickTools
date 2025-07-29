@@ -4,7 +4,7 @@
         <title>QuickTools Updates</title>
         <description>Updates for QuickTools - Essential developer tools in your menu bar</description>
         <language>en</language>
-        <link>https://yourdomain.com/quicktools/</link>
+        <link>https://github.com/shadster-devs/QuickTools</link>
         
         <item>
             <title>QuickTools 1.0.0</title>
@@ -31,9 +31,9 @@
             <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
             <enclosure 
-                url="https://yourdomain.com/quicktools/releases/QuickTools-1.0.0.zip"
-                sparkle:edSignature="YOUR_SIGNATURE_HERE"
-                length="FILESIZE_IN_BYTES"
+                url="https://github.com/shadster-devs/QuickTools/releases/download/v1.0.0/QuickTools-1.0.0.zip"
+                sparkle:edSignature="PLACEHOLDER_SIGNATURE"
+                length="1000000"
                 type="application/octet-stream" />
         </item>
         

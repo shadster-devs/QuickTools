@@ -173,7 +173,7 @@ jobs:
             <title>QuickTools ${{ steps.version.outputs.version }}</title>
             <description><![CDATA[
                 <h3>QuickTools ${{ steps.version.outputs.version }}</h3>
-                $(cat release_notes.md | sed 's/^## What.*$//' | sed 's/^## Installation.*//' | sed 's/^## Automatic.*//')
+                <p>New release of QuickTools with essential developer tools for your menu bar.</p>
             ]]></description>
             <pubDate>$(date -R)</pubDate>
             <sparkle:version>${{ steps.version.outputs.version }}</sparkle:version>
