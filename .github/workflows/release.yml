@@ -87,12 +87,17 @@ jobs:
         
     - name: Import Sparkle Private Key
       run: |
-        echo "${{ secrets.SPARKLE_PRIVATE_KEY }}" | base64 -d > sparkle_private_key
+        echo "${{ secrets.SPARKLE_PRIVATE_KEY }}" > sparkle_private_key
+        chmod 600 sparkle_private_key
+        ls -la sparkle_private_key
+        echo "Private key file created"
         
     - name: Sign update with Sparkle
       id: sign
       run: |
         cd ./build
+        ls -la QuickTools.app
+        echo "Signing with Sparkle..."
         SIGNATURE=$(/opt/homebrew/Caskroom/sparkle/2.7.1/bin/sign_update QuickTools.app ../sparkle_private_key)
         echo "signature=$SIGNATURE" >> $GITHUB_OUTPUT
         echo "Signature: $SIGNATURE"
