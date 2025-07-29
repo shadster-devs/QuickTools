@@ -1,0 +1,238 @@
+name: Build and Release QuickTools
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: Import Code Signing Certificate
+      uses: apple-actions/import-codesign-certs@v2
+      with:
+        p12-file-base64: ${{ secrets.CERTIFICATES_P12 }}
+        p12-password: ${{ secrets.CERTIFICATES_P12_PASSWORD }}
+        
+    - name: Import Provisioning Profile
+      uses: apple-actions/download-provisioning-profiles@v2
+      with:
+        bundle-id: ${{ secrets.BUNDLE_ID }}
+        profile-type: 'MAC_APP_STORE'
+        issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+        
+    - name: Install Sparkle Tools
+      run: |
+        brew install sparkle
+        echo "/opt/homebrew/Caskroom/sparkle/2.7.1/bin" >> $GITHUB_PATH
+        
+    - name: Extract version from tag
+      id: version
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+        
+    - name: Update version in project
+      run: |
+        # Update CFBundleShortVersionString in Info.plist
+        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.version }}" QuickTools/Resources/Info.plist
+        
+        # Update AppConstants.swift
+        sed -i '' 's/static let appVersion = "[^"]*"/static let appVersion = "${{ steps.version.outputs.version }}"/' QuickTools/Models/AppConstants.swift
+        
+    - name: Build and Archive
+      run: |
+        xcodebuild archive \
+          -project QuickTools.xcodeproj \
+          -scheme QuickTools \
+          -configuration Release \
+          -archivePath ./build/QuickTools.xcarchive \
+          CODE_SIGN_IDENTITY="Developer ID Application" \
+          CODE_SIGN_STYLE=Manual \
+          DEVELOPMENT_TEAM=${{ secrets.TEAM_ID }}
+          
+    - name: Export Archive
+      run: |
+        # Create export options plist
+        cat > ExportOptions.plist << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+          <key>method</key>
+          <string>developer-id</string>
+          <key>teamID</key>
+          <string>${{ secrets.TEAM_ID }}</string>
+        </dict>
+        </plist>
+        EOF
+        
+        xcodebuild -exportArchive \
+          -archivePath ./build/QuickTools.xcarchive \
+          -exportPath ./build \
+          -exportOptionsPlist ExportOptions.plist
+          
+    - name: Create ZIP for distribution
+      run: |
+        cd ./build
+        zip -r "QuickTools-${{ steps.version.outputs.version }}.zip" QuickTools.app
+        
+    - name: Import Sparkle Private Key
+      run: |
+        echo "${{ secrets.SPARKLE_PRIVATE_KEY }}" | base64 -d > sparkle_private_key
+        
+    - name: Sign update with Sparkle
+      id: sign
+      run: |
+        cd ./build
+        SIGNATURE=$(/opt/homebrew/Caskroom/sparkle/2.7.1/bin/sign_update QuickTools.app ../sparkle_private_key)
+        echo "signature=$SIGNATURE" >> $GITHUB_OUTPUT
+        echo "Signature: $SIGNATURE"
+        
+    - name: Get file size
+      id: filesize
+      run: |
+        SIZE=$(stat -f%z "./build/QuickTools-${{ steps.version.outputs.version }}.zip")
+        echo "size=$SIZE" >> $GITHUB_OUTPUT
+        echo "File size: $SIZE bytes"
+        
+    - name: Generate Release Notes
+      id: notes
+      run: |
+        # Extract release notes from git commits since last tag
+        LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        if [ -n "$LAST_TAG" ]; then
+          NOTES=$(git log --pretty=format:"- %s" $LAST_TAG..HEAD)
+        else
+          NOTES="Initial release of QuickTools"
+        fi
+        
+        # Create formatted release notes
+        cat > release_notes.md << EOF
+        ## What's New in v${{ steps.version.outputs.version }}
+        
+        $NOTES
+        
+        ## Installation
+        1. Download QuickTools-${{ steps.version.outputs.version }}.zip
+        2. Extract and move QuickTools.app to Applications
+        3. Launch QuickTools from your menu bar
+        
+        ## Automatic Updates
+        This version supports automatic updates via Sparkle. Future updates will be delivered automatically.
+        EOF
+        
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: QuickTools v${{ steps.version.outputs.version }}
+        body_path: release_notes.md
+        draft: false
+        prerelease: false
+        
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./build/QuickTools-${{ steps.version.outputs.version }}.zip
+        asset_name: QuickTools-${{ steps.version.outputs.version }}.zip
+        asset_content_type: application/zip
+        
+    - name: Update Appcast
+      run: |
+        # Generate new appcast entry
+        cat > new_entry.xml << EOF
+        <item>
+            <title>QuickTools ${{ steps.version.outputs.version }}</title>
+            <description><![CDATA[
+                <h3>QuickTools ${{ steps.version.outputs.version }}</h3>
+                $(cat release_notes.md | sed 's/^## What.*$//' | sed 's/^## Installation.*//' | sed 's/^## Automatic.*//')
+            ]]></description>
+            <pubDate>$(date -R)</pubDate>
+            <sparkle:version>${{ steps.version.outputs.version }}</sparkle:version>
+            <sparkle:shortVersionString>${{ steps.version.outputs.version }}</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <enclosure 
+                url="https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/QuickTools-${{ steps.version.outputs.version }}.zip"
+                sparkle:edSignature="${{ steps.sign.outputs.signature }}"
+                length="${{ steps.filesize.outputs.size }}"
+                type="application/octet-stream" />
+        </item>
+        EOF
+        
+        # Update appcast.xml with new entry
+        python3 << 'EOF'
+        import xml.etree.ElementTree as ET
+        import sys
+        
+        # Read the new entry
+        with open('new_entry.xml', 'r') as f:
+            new_entry_text = f.read()
+        
+        # Read existing appcast
+        try:
+            tree = ET.parse('appcast.xml')
+            root = tree.getroot()
+        except:
+            # Create new appcast if it doesn't exist
+            root = ET.Element('rss', version="2.0")
+            root.set('xmlns:sparkle', 'http://www.andymatuschak.org/xml-namespaces/sparkle')
+            root.set('xmlns:dc', 'http://purl.org/dc/elements/1.1/')
+            channel = ET.SubElement(root, 'channel')
+            ET.SubElement(channel, 'title').text = 'QuickTools Updates'
+            ET.SubElement(channel, 'description').text = 'Updates for QuickTools - Essential developer tools in your menu bar'
+            ET.SubElement(channel, 'language').text = 'en'
+            ET.SubElement(channel, 'link').text = 'https://github.com/${{ github.repository }}'
+            tree = ET.ElementTree(root)
+        
+        # Find channel
+        channel = root.find('channel')
+        
+        # Parse new entry and add it as first item
+        new_item = ET.fromstring(new_entry_text)
+        
+        # Insert as first item (after channel metadata)
+        items = channel.findall('item')
+        if items:
+            # Insert before first existing item
+            channel.insert(list(channel).index(items[0]), new_item)
+        else:
+            # Add as first item
+            channel.append(new_item)
+        
+        # Write updated appcast
+        tree.write('appcast.xml', encoding='utf-8', xml_declaration=True)
+        EOF
+        
+    - name: Commit and push updated appcast
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add appcast.xml
+        git commit -m "Update appcast for v${{ steps.version.outputs.version }}" || exit 0
+        git push origin main
+        
+    - name: Clean up
+      run: |
+        rm -f sparkle_private_key
+        rm -f new_entry.xml
+        rm -f release_notes.md 
