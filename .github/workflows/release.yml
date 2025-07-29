@@ -103,9 +103,7 @@ jobs:
         echo "Checking if app is properly signed..."
         codesign -dv QuickTools.app
         echo "Signing with Sparkle..."
-        /opt/homebrew/Caskroom/sparkle/2.7.1/bin/sign_update QuickTools.app ../sparkle_private_key || echo "Sparkle signing failed"
-        echo "Trying direct Sparkle signing..."
-        SIGNATURE=$(/opt/homebrew/Caskroom/sparkle/2.7.1/bin/sign_update QuickTools.app ../sparkle_private_key 2>&1) || echo "Direct signing failed: $?"
+        SIGNATURE=$(/opt/homebrew/Caskroom/sparkle/2.7.1/bin/sign_update QuickTools.app --ed-key-file ../sparkle_private_key)
         echo "signature=$SIGNATURE" >> $GITHUB_OUTPUT
         echo "Signature: $SIGNATURE"
         
