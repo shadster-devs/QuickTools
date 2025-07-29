@@ -17,7 +17,9 @@
     <ns0:shortVersionString>1.1.9</ns0:shortVersionString>
     <ns0:minimumSystemVersion>13.0</ns0:minimumSystemVersion>
     <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.1.9/QuickTools-1.1.9.zip" ns0:edSignature="7j8zQIaqGLn6QPxZltgeLXIGLAHbHirqwtBbS7BQxRBqzk85ksYnD+yIu1EzmaeL4kmHBRHVfM5BZmUz5RKqDA==" length="3158418" type="application/octet-stream" />
-</item><item>
+</item>
+
+<item>
     <title>QuickTools 1.1.7</title>
     <description>
         &lt;h3&gt;QuickTools 1.1.7&lt;/h3&gt;
@@ -28,7 +30,9 @@
     <ns0:shortVersionString>1.1.7</ns0:shortVersionString>
     <ns0:minimumSystemVersion>13.0</ns0:minimumSystemVersion>
     <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.1.7/QuickTools-1.1.7.zip" ns0:edSignature="DQOp/tG4RaClE7D56hXvuMuSAzEdcUYxeakwADJ121i9OlY38K+H1pZvPFhkxivKolIob7AXO4cItiiEmiOwBg==" length="3158348" type="application/octet-stream" />
-</item><item>
+</item>
+
+<item>
     <title>QuickTools 1.1.5</title>
     <description>
         &lt;h3&gt;QuickTools 1.1.5&lt;/h3&gt;
@@ -39,78 +43,7 @@
     <ns0:shortVersionString>1.1.5</ns0:shortVersionString>
     <ns0:minimumSystemVersion>13.0</ns0:minimumSystemVersion>
     <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.1.5/QuickTools-1.1.5.zip" ns0:edSignature="K/IVzWSaBdLcF2pLl7qGt+ozsMe1T3XRJoZJ4DamvMiiPVXaxkAl3UVdZbSJ12OsH1OdchKD/JSb+NZGKSIwCQ==" length="3157684" type="application/octet-stream" />
-</item><item>
-    <title>QuickTools 1.1.4</title>
-    <description>
-        &lt;h3&gt;QuickTools 1.1.4&lt;/h3&gt;
-        &lt;p&gt;New release of QuickTools with essential developer tools for your menu bar.&lt;/p&gt;
-    </description>
-    <pubDate>Tue, 29 Jul 2025 16:04:52 +0000</pubDate>
-    <ns0:version>1.1.4</ns0:version>
-    <ns0:shortVersionString>1.1.4</ns0:shortVersionString>
-    <ns0:minimumSystemVersion>13.0</ns0:minimumSystemVersion>
-    <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.1.4/QuickTools-1.1.4.zip" ns0:edSignature="OqUY2KrzNmH+JHYEljK5xHKdlX5TToWsRFjn6pN0cwEXHTz9OwT8qMU1PaU4acFoeIMQn7/EQhYTmUD/Cn0yCQ==" length="3158407" type="application/octet-stream" />
-</item><item>
-    <title>QuickTools 1.1.3</title>
-    <description>
-        &lt;h3&gt;QuickTools 1.1.3&lt;/h3&gt;
-        &lt;p&gt;New release of QuickTools with essential developer tools for your menu bar.&lt;/p&gt;
-    </description>
-    <pubDate>Tue, 29 Jul 2025 15:51:44 +0000</pubDate>
-    <ns0:version>1.1.3</ns0:version>
-    <ns0:shortVersionString>1.1.3</ns0:shortVersionString>
-    <ns0:minimumSystemVersion>13.0</ns0:minimumSystemVersion>
-    <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.1.3/QuickTools-1.1.3.zip" ns0:edSignature="jgsj4VDeJAQPRYng8XOnVtHcPdXLEz+xNYFQML5Q92ve8yl16AfgChsvOYDTi/aCDstZZnHHYR95UP2ILrGaAQ==" length="3158200" type="application/octet-stream" />
-</item><item>
-    <title>QuickTools 1.1.2</title>
-    <description>
-        &lt;h3&gt;QuickTools 1.1.2&lt;/h3&gt;
-        &lt;p&gt;New release of QuickTools with essential developer tools for your menu bar.&lt;/p&gt;
-    </description>
-    <pubDate>Tue, 29 Jul 2025 15:49:37 +0000</pubDate>
-    <ns0:version>1.1.2</ns0:version>
-    <ns0:shortVersionString>1.1.2</ns0:shortVersionString>
-    <ns0:minimumSystemVersion>13.0</ns0:minimumSystemVersion>
-    <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.1.2/QuickTools-1.1.2.zip" ns0:edSignature="rE7Nh+H5LKEwNFl6pw25kHzxITn2hovbVZmdy1KsCInvu7Syluki5ta46rryIP7QR3DZ9LYhVjDrrUF01eJGBw==" length="3158088" type="application/octet-stream" />
-</item><item>
-    <title>QuickTools 1.1.1</title>
-    <description>
-        &lt;h3&gt;QuickTools 1.1.1&lt;/h3&gt;
-        &lt;p&gt;New release of QuickTools with essential developer tools for your menu bar.&lt;/p&gt;
-    </description>
-    <pubDate>Tue, 29 Jul 2025 15:22:01 +0000</pubDate>
-    <ns0:version>1.1.1</ns0:version>
-    <ns0:shortVersionString>1.1.1</ns0:shortVersionString>
-    <ns0:minimumSystemVersion>13.0</ns0:minimumSystemVersion>
-    <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.1.1/QuickTools-1.1.1.zip" ns0:edSignature="N2LdE5V5WGPmF9KYeI+OvpRct3Bd7IE0ojQ5Vhi99Dqem5RSNDAMTqEBr/VkKU/GA8Qci1dQnWRYx5XnDBQDDQ==" length="3149049" type="application/octet-stream" />
-</item><item>
-            <title>QuickTools 1.0.0</title>
-            <description>
-                &lt;h3&gt;QuickTools 1.0.0&lt;/h3&gt;
-                &lt;p&gt;Initial release with essential developer tools:&lt;/p&gt;
-                &lt;ul&gt;
-                    &lt;li&gt;JSON Validator&lt;/li&gt;
-                    &lt;li&gt;Regex Tester&lt;/li&gt;
-                    &lt;li&gt;Base64 Encoder/Decoder&lt;/li&gt;
-                    &lt;li&gt;URL Encoder/Decoder&lt;/li&gt;
-                    &lt;li&gt;Hash Generator&lt;/li&gt;
-                    &lt;li&gt;UUID Generator&lt;/li&gt;
-                    &lt;li&gt;Color Picker&lt;/li&gt;
-                    &lt;li&gt;Timestamp Converter&lt;/li&gt;
-                    &lt;li&gt;QR Code Generator&lt;/li&gt;
-                    &lt;li&gt;Text Diff&lt;/li&gt;
-                    &lt;li&gt;Image Converter&lt;/li&gt;
-                    &lt;li&gt;Snippet Store&lt;/li&gt;
-                &lt;/ul&gt;
-            </description>
-            <pubDate>Mon, 01 Jan 2024 10:00:00 +0000</pubDate>
-            <ns0:version>1.0.0</ns0:version>
-            <ns0:shortVersionString>1.0.0</ns0:shortVersionString>
-            <ns0:minimumSystemVersion>13.0</ns0:minimumSystemVersion>
-            <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.0.0/QuickTools-1.0.0.zip" ns0:edSignature="PLACEHOLDER_SIGNATURE" length="1000000" type="application/octet-stream" />
-        </item>
-        
-        
+</item>
         
     </channel>
 </rss>
