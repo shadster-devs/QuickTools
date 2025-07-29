@@ -167,69 +167,120 @@ jobs:
         
     - name: Update Appcast
       run: |
-        # Generate new appcast entry with proper namespaces
-        cat > new_entry.xml << EOF
-        <item xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
-            <title>QuickTools ${{ steps.version.outputs.version }}</title>
-            <description><![CDATA[
-                <h3>QuickTools ${{ steps.version.outputs.version }}</h3>
-                <p>New release of QuickTools with essential developer tools for your menu bar.</p>
-            ]]></description>
-            <pubDate>$(date -R)</pubDate>
-            <sparkle:version>${{ steps.version.outputs.version }}</sparkle:version>
-            <sparkle:shortVersionString>${{ steps.version.outputs.version }}</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
-            <enclosure 
-                url="https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/QuickTools-${{ steps.version.outputs.version }}.zip"
-                sparkle:edSignature="${{ steps.sign.outputs.signature }}"
-                length="${{ steps.filesize.outputs.size }}"
-                type="application/octet-stream" />
-        </item>
-        EOF
-        
-        # Update appcast.xml with new entry
-        python3 << 'EOF'
+        # Create appcast update script
+        cat > update_appcast.py << 'EOF'
+        #!/usr/bin/env python3
         import xml.etree.ElementTree as ET
         import sys
+        import os
+        from datetime import datetime
         
-        # Read the new entry
-        with open('new_entry.xml', 'r') as f:
-            new_entry_text = f.read()
+        def update_appcast(version, signature, filesize, repository):
+            """Update appcast.xml with new version entry"""
+            
+            print(f"Updating appcast for version {version}")
+            
+            # Create new entry XML with current date
+            current_date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S +0000')
+            new_entry_xml = f'''<item xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+            <title>QuickTools {version}</title>
+            <description><![CDATA[
+                <h3>QuickTools {version}</h3>
+                <p>New release of QuickTools with essential developer tools for your menu bar.</p>
+            ]]></description>
+            <pubDate>{current_date}</pubDate>
+            <sparkle:version>{version}</sparkle:version>
+            <sparkle:shortVersionString>{version}</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <enclosure 
+                url="https://github.com/{repository}/releases/download/v{version}/QuickTools-{version}.zip"
+                sparkle:edSignature="{signature}"
+                length="{filesize}"
+                type="application/octet-stream" />
+        </item>'''
+            
+            try:
+                # Parse the new entry first to validate it
+                new_item = ET.fromstring(new_entry_xml)
+                print("✅ New entry XML is valid")
+                
+                # Read existing appcast
+                if os.path.exists('appcast.xml'):
+                    tree = ET.parse('appcast.xml')
+                    root = tree.getroot()
+                    print("✅ Existing appcast parsed successfully")
+                else:
+                    # Create new appcast if it doesn't exist
+                    root = ET.Element('rss', version="2.0")
+                    root.set('xmlns:sparkle', 'http://www.andymatuschak.org/xml-namespaces/sparkle')
+                    root.set('xmlns:dc', 'http://purl.org/dc/elements/1.1/')
+                    channel = ET.SubElement(root, 'channel')
+                    ET.SubElement(channel, 'title').text = 'QuickTools Updates'
+                    ET.SubElement(channel, 'description').text = 'Updates for QuickTools - Essential developer tools in your menu bar'
+                    ET.SubElement(channel, 'language').text = 'en'
+                    ET.SubElement(channel, 'link').text = f'https://github.com/{repository}'
+                    tree = ET.ElementTree(root)
+                    print("✅ New appcast created")
+                
+                # Find channel
+                channel = root.find('channel')
+                if channel is None:
+                    print("❌ No channel found in appcast")
+                    return False
+                
+                # Add new item as first item
+                items = channel.findall('item')
+                if items:
+                    # Insert before first existing item
+                    channel.insert(list(channel).index(items[0]), new_item)
+                else:
+                    # Add as first item after other channel elements
+                    title_elem = channel.find('title')
+                    if title_elem is not None:
+                        insert_index = list(channel).index(title_elem) + 1
+                        # Skip description, language, link elements
+                        for elem in list(channel)[insert_index:]:
+                            if elem.tag in ['description', 'language', 'link']:
+                                insert_index += 1
+                            else:
+                                break
+                        channel.insert(insert_index, new_item)
+                    else:
+                        channel.append(new_item)
+                
+                print("✅ New item added to appcast")
+                
+                # Write updated appcast
+                tree.write('appcast.xml', encoding='utf-8', xml_declaration=True)
+                print("✅ Updated appcast.xml written successfully")
+                
+                return True
+                
+            except Exception as e:
+                print(f"❌ Error updating appcast: {e}")
+                import traceback
+                traceback.print_exc()
+                return False
         
-        # Read existing appcast
-        try:
-            tree = ET.parse('appcast.xml')
-            root = tree.getroot()
-        except:
-            # Create new appcast if it doesn't exist
-            root = ET.Element('rss', version="2.0")
-            root.set('xmlns:sparkle', 'http://www.andymatuschak.org/xml-namespaces/sparkle')
-            root.set('xmlns:dc', 'http://purl.org/dc/elements/1.1/')
-            channel = ET.SubElement(root, 'channel')
-            ET.SubElement(channel, 'title').text = 'QuickTools Updates'
-            ET.SubElement(channel, 'description').text = 'Updates for QuickTools - Essential developer tools in your menu bar'
-            ET.SubElement(channel, 'language').text = 'en'
-            ET.SubElement(channel, 'link').text = 'https://github.com/${{ github.repository }}'
-            tree = ET.ElementTree(root)
-        
-        # Find channel
-        channel = root.find('channel')
-        
-        # Parse new entry and add it as first item
-        new_item = ET.fromstring(new_entry_text)
-        
-        # Insert as first item (after channel metadata)
-        items = channel.findall('item')
-        if items:
-            # Insert before first existing item
-            channel.insert(list(channel).index(items[0]), new_item)
-        else:
-            # Add as first item
-            channel.append(new_item)
-        
-        # Write updated appcast
-        tree.write('appcast.xml', encoding='utf-8', xml_declaration=True)
+        if __name__ == "__main__":
+            if len(sys.argv) != 5:
+                print("Usage: python3 update_appcast.py <version> <signature> <filesize> <repository>")
+                sys.exit(1)
+            
+            version = sys.argv[1]
+            signature = sys.argv[2]
+            filesize = sys.argv[3]
+            repository = sys.argv[4]
+            
+            success = update_appcast(version, signature, filesize, repository)
+            if not success:
+                sys.exit(1)
+            
+            print(f"🎉 Successfully updated appcast for version {version}")
         EOF
+        
+        # Run the appcast update script
+        python3 update_appcast.py "${{ steps.version.outputs.version }}" "${{ steps.sign.outputs.signature }}" "${{ steps.filesize.outputs.size }}" "${{ github.repository }}"
         
     - name: Commit and push updated appcast
       run: |
