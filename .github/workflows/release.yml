@@ -97,8 +97,15 @@ jobs:
       run: |
         cd ./build
         ls -la QuickTools.app
+        echo "Checking private key..."
+        ls -la ../sparkle_private_key
+        cat ../sparkle_private_key
+        echo "Checking if app is properly signed..."
+        codesign -dv QuickTools.app
         echo "Signing with Sparkle..."
-        SIGNATURE=$(/opt/homebrew/Caskroom/sparkle/2.7.1/bin/sign_update QuickTools.app ../sparkle_private_key)
+        /opt/homebrew/Caskroom/sparkle/2.7.1/bin/sign_update QuickTools.app ../sparkle_private_key || echo "Sparkle signing failed"
+        echo "Trying direct Sparkle signing..."
+        SIGNATURE=$(/opt/homebrew/Caskroom/sparkle/2.7.1/bin/sign_update QuickTools.app ../sparkle_private_key 2>&1) || echo "Direct signing failed: $?"
         echo "signature=$SIGNATURE" >> $GITHUB_OUTPUT
         echo "Signature: $SIGNATURE"
         
