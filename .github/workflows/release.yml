@@ -167,9 +167,9 @@ jobs:
         
     - name: Update Appcast
       run: |
-        # Generate new appcast entry
+        # Generate new appcast entry with proper namespaces
         cat > new_entry.xml << EOF
-        <item>
+        <item xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
             <title>QuickTools ${{ steps.version.outputs.version }}</title>
             <description><![CDATA[
                 <h3>QuickTools ${{ steps.version.outputs.version }}</h3>

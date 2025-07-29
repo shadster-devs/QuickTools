@@ -146,7 +146,7 @@ struct SettingsView: View {
     
     private var appearanceSection: some View {
         ModernCard {
-            VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 20) {
                 SectionHeader(
                     icon: "paintbrush.fill",
                     title: "Appearance",
@@ -171,7 +171,7 @@ struct SettingsView: View {
                                             selectedTheme = theme
                                             settingsManager.theme = theme
                                             settingsManager.saveSettings()
-                                }
+                                        }
                             }
                         }
                     }
@@ -185,7 +185,7 @@ struct SettingsView: View {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                         settingsManager.showToolDescriptions.toggle()
                                         settingsManager.saveSettings()
-                        }
+                                    }
                     }
                 }
             }
@@ -194,7 +194,7 @@ struct SettingsView: View {
     
     private var toolsSection: some View {
         ModernCard {
-            VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 20) {
                 SectionHeader(
                     icon: "wrench.and.screwdriver.fill",
                     title: "Developer Tools",
@@ -202,7 +202,7 @@ struct SettingsView: View {
                     color: .orange,
                     badge: "\(settingsManager.sortedEnabledTools.count) enabled"
                 )
-                
+                            
                 VStack(spacing: 8) {
                                 ForEach(settingsManager.enabledTools.sorted { $0.order < $1.order }) { tool in
                         EnhancedToolRow(tool: tool)
@@ -210,12 +210,12 @@ struct SettingsView: View {
                                 }
                             }
             }
-        }
-    }
+                        }
+                    }
     
     private var resetSection: some View {
         ModernCard {
-            VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 16) {
                 SectionHeader(
                     icon: "arrow.clockwise.circle.fill",
                     title: "Reset Settings",
