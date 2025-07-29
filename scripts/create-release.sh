@@ -5,6 +5,8 @@
 
 set -e
 
+git pull origin main
+
 if [ -z "$1" ]; then
     echo "Usage: $0 <version>"
     echo "Example: $0 1.0.1"
