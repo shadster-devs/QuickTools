@@ -102,87 +102,66 @@ jobs:
       run: |
         cd ./build
         
-        echo "🔧 Deep signing for notarization - following Apple's best practices..."
+        echo "🔧 Sparkle-specific signing for notarization (based on GitHub issue #1550)..."
         
-        # Step 1: Sign all nested executables and XPC services first (deepest first)
-        echo "Step 1: Signing XPC services and nested executables..."
-        find QuickTools.app -name "*.xpc" -type d | while read xpc; do
-          if [ -d "$xpc/Contents/MacOS" ]; then
-            for binary in "$xpc"/Contents/MacOS/*; do
-              if [ -f "$binary" ] && file "$binary" | grep -q "Mach-O"; then
-                echo "Signing XPC binary: $binary"
-                codesign --force --timestamp --options runtime \
-                  --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
-                  "$binary"
-              fi
-            done
-            echo "Signing XPC service: $xpc"
-            codesign --force --timestamp --options runtime \
-              --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
-              "$xpc"
-          fi
-        done
+        # CRITICAL: Remove all existing signatures from Sparkle first
+        echo "🧹 Removing existing Sparkle signatures..."
+        if [ -d "QuickTools.app/Contents/Frameworks/Sparkle.framework" ]; then
+          codesign --remove-signature QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate || true
+          codesign --remove-signature QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc || true
+          codesign --remove-signature QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc || true
+          codesign --remove-signature QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B/Updater.app || true
+          codesign --remove-signature QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B/Sparkle || true
+          codesign --remove-signature QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B || true
+          codesign --remove-signature QuickTools.app/Contents/Frameworks/Sparkle.framework || true
+        fi
         
-        # Step 2: Sign helper apps (like Sparkle Updater.app)
-        echo "Step 2: Signing helper applications..."
-        find QuickTools.app -name "*.app" -not -path "*/MacOS/QuickTools" -type d | while read app; do
-          if [ -d "$app/Contents/MacOS" ]; then
-            for binary in "$app"/Contents/MacOS/*; do
-              if [ -f "$binary" ] && file "$binary" | grep -q "Mach-O"; then
-                echo "Signing helper app binary: $binary"
-                codesign --force --timestamp --options runtime \
-                  --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
-                  "$binary"
-              fi
-            done
-            echo "Signing helper app: $app"
-            codesign --force --timestamp --options runtime \
-              --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
-              "$app"
-          fi
-        done
+        # Step 1: Sign Sparkle components in correct order (from Sparkle documentation)
+        echo "🎯 Step 1: Signing Sparkle XPC Services..."
+        codesign --force --timestamp --options runtime \
+          --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+          "QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc"
+          
+        codesign --force --timestamp --options runtime \
+          --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+          "QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc"
         
-        # Step 3: Sign all standalone executables and dylibs in frameworks
-        echo "Step 3: Signing framework executables and libraries..."
-        find QuickTools.app/Contents/Frameworks -type f \( -name "*.dylib" -o -perm +111 \) | while read binary; do
-          if file "$binary" | grep -q "Mach-O"; then
-            # Skip if it's inside an .app or .xpc (already signed above)
-            if [[ ! "$binary" =~ \.app/ ]] && [[ ! "$binary" =~ \.xpc/ ]]; then
-              echo "Signing framework binary: $binary"
-              codesign --force --timestamp --options runtime \
-                --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
-                "$binary"
-            fi
-          fi
-        done
+        echo "🎯 Step 2: Signing Sparkle Updater app..."
+        codesign --force --timestamp --options runtime \
+          --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+          "QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B/Updater.app"
         
-        # Step 4: Sign frameworks themselves
-        echo "Step 4: Signing frameworks..."
-        find QuickTools.app/Contents/Frameworks -name "*.framework" -type d | while read framework; do
-          echo "Signing framework: $framework"
-          codesign --force --timestamp --options runtime \
-            --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
-            "$framework"
-        done
+        echo "🎯 Step 3: Signing Sparkle Autoupdate binary..."
+        codesign --force --timestamp --options runtime \
+          --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+          "QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate"
         
-        # Step 5: Sign main app executable
-        echo "Step 5: Signing main executable..."
+        echo "🎯 Step 4: Signing Sparkle main binary..."
+        codesign --force --timestamp --options runtime \
+          --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+          "QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B/Sparkle"
+        
+        echo "🎯 Step 5: Signing Sparkle framework bundle..."
+        codesign --force --timestamp --options runtime \
+          --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+          "QuickTools.app/Contents/Frameworks/Sparkle.framework"
+        
+        echo "🎯 Step 6: Signing main app executable..."
         codesign --force --timestamp --options runtime \
           --entitlements ../QuickTools/Resources/QuickTools.entitlements \
           --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
           QuickTools.app/Contents/MacOS/QuickTools
         
-        # Step 6: Sign main app bundle (final step)
-        echo "Step 6: Signing main app bundle..."
+        echo "🎯 Step 7: Signing main app bundle (final)..."
         codesign --force --timestamp --options runtime \
           --entitlements ../QuickTools/Resources/QuickTools.entitlements \
           --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
           QuickTools.app
           
-        echo "✅ Verifying final signature..."
+        echo "✅ Verifying Sparkle signatures specifically..."
+        codesign --verify --verbose QuickTools.app/Contents/Frameworks/Sparkle.framework/Versions/B/Sparkle
+        codesign --verify --verbose QuickTools.app/Contents/Frameworks/Sparkle.framework
         codesign --verify --deep --strict --verbose=2 QuickTools.app
-        echo "📋 Gatekeeper status (before notarization):"
-        spctl -a -t exec -vv QuickTools.app || echo "⚠️  Expected: App rejected until notarized"
           
     - name: Create ZIP for distribution
       run: |
