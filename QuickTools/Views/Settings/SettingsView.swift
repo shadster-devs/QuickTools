@@ -666,10 +666,10 @@ struct UpdateStatusSection: View {
                 .disabled(isChecking)
                 
                 if updateAvailable {
-                    Button(action: downloadUpdate) {
+                    Button(action: installUpdate) {
                         HStack(spacing: 6) {
-                            Image(systemName: "safari")
-                            Text("Download Update")
+                            Image(systemName: "square.and.arrow.down")
+                            Text("Install Update")
                         }
                     }
                     .buttonStyle(.borderedProminent)
@@ -686,40 +686,22 @@ struct UpdateStatusSection: View {
     
     private func checkForUpdates() {
         isChecking = true
+        updaterController.checkForUpdates(nil)
         
         // Update last check date
         lastCheckDate = Date()
         UserDefaults.standard.set(lastCheckDate, forKey: "LastUpdateCheck")
         
-        // Check manually instead of using Sparkle's auto-install flow
-        checkForUpdatesManually()
-    }
-    
-    private func checkForUpdatesManually() {
-        // Simple version comparison against GitHub
-        let currentVersion = AppConstants.appVersion
-        
-        // Simulate update check (you could make actual HTTP request to GitHub API)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            self.isChecking = false
-            
-            // For demo: if current version is 1.0.0, show update available
-            if currentVersion == "1.0.0" {
-                self.updateAvailable = true
-                self.availableVersion = "1.1.1"
-                self.updateMessage = "Update available: v1.1.1"
-            } else {
-                self.updateAvailable = false
-                self.updateMessage = "You're up to date"
-            }
+        // Reset state after a delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            isChecking = false
+            updateMessage = "You're up to date"
+            updateAvailable = false
         }
     }
     
-    private func downloadUpdate() {
-        // Open GitHub releases page for manual download
-        if let url = URL(string: "https://github.com/shadster-devs/QuickTools/releases/latest") {
-            NSWorkspace.shared.open(url)
-        }
+    private func installUpdate() {
+        updaterController.checkForUpdates(nil)
     }
     
     private func checkUpdateStatus() {
