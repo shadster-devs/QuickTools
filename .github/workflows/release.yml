@@ -92,6 +92,61 @@ jobs:
         cd ./build
         zip -r "QuickTools-${{ steps.version.outputs.version }}.zip" QuickTools.app
         
+    - name: Create App Store Connect API Key
+      run: |
+        # Create API key file for notarization
+        echo "${{ secrets.NOTARIZE_APP_STORE_CONNECT_API_KEY }}" > AuthKey.p8
+        chmod 600 AuthKey.p8
+        echo "✅ API key file created"
+        
+    - name: Notarize app with Apple
+      run: |
+        echo "🍎 Submitting app to Apple for notarization..."
+        
+        # Submit for notarization
+        xcrun notarytool submit "./build/QuickTools-${{ steps.version.outputs.version }}.zip" \
+          --key AuthKey.p8 \
+          --key-id "${{ secrets.NOTARIZE_APP_STORE_CONNECT_API_KEY_ID }}" \
+          --issuer "${{ secrets.NOTARIZE_APP_STORE_CONNECT_ISSUER_ID }}" \
+          --wait \
+          --timeout 1h \
+          --webhook-url-failure-retry-count 3
+        
+        echo "✅ Notarization completed successfully!"
+        
+    - name: Staple notarization to app
+      run: |
+        echo "📎 Stapling notarization ticket to app..."
+        
+        # Extract the ZIP to staple the ticket
+        cd ./build
+        rm -rf QuickTools_temp
+        mkdir QuickTools_temp
+        cd QuickTools_temp
+        unzip "../QuickTools-${{ steps.version.outputs.version }}.zip"
+        
+        # Staple the notarization ticket
+        xcrun stapler staple "QuickTools.app"
+        
+        # Verify stapling worked
+        echo "🔍 Verifying stapled notarization..."
+        xcrun stapler validate "QuickTools.app"
+        spctl -a -vvv -t install "QuickTools.app"
+        
+        # Re-create the ZIP with notarized app
+        cd ..
+        rm "QuickTools-${{ steps.version.outputs.version }}.zip"
+        cd QuickTools_temp
+        zip -r "../QuickTools-${{ steps.version.outputs.version }}.zip" QuickTools.app
+        cd ..
+        rm -rf QuickTools_temp
+        
+        # Update the main app directory for DMG creation
+        rm -rf QuickTools.app
+        unzip "QuickTools-${{ steps.version.outputs.version }}.zip"
+        
+        echo "✅ Notarized ZIP created successfully!"
+        
     - name: Create DMG for distribution
       run: |
         cd ./build
@@ -179,6 +234,10 @@ jobs:
         ## Installation
         **DMG**: Double-click and drag QuickTools to Applications folder  
         **ZIP**: Extract and move QuickTools.app to Applications folder
+        
+        ## Security & Trust
+        ✅ **Code Signed** with Apple Developer ID Certificate  
+        ✅ **Notarized** by Apple - No security warnings!
         
         ## Automatic Updates
         This version supports automatic updates via Sparkle. Future updates will be delivered automatically.
@@ -350,5 +409,6 @@ jobs:
     - name: Clean up
       run: |
         rm -f sparkle_private_key
+        rm -f AuthKey.p8
         rm -f new_entry.xml
         rm -f release_notes.md 
