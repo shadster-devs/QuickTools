@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AppKit
 
 struct ContentView: View {
     @EnvironmentObject var settingsManager: SettingsManager
@@ -140,11 +141,32 @@ struct ContentView: View {
                 }
             }
             
-            // Floating Settings Button
+            // Floating Action Buttons
             if !showingSettings && selectedTool == nil {
                 VStack {
+                    // Top row: Quit (left) and Settings (right)
                     HStack {
+                        // Quit button (top left)
+                        Button(action: {
+                            NSApplication.shared.terminate(nil)
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.red.opacity(0.8))
+                                .frame(width: 32, height: 32)
+                                .background(
+                                    Circle()
+                                        .fill(.ultraThinMaterial)
+                                        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+                                )
+                        }
+                        .buttonStyle(.borderless)
+                        .help("Quit QuickTools")
+                        .padding(.leading, 16)
+                        
                         Spacer()
+                        
+                        // Settings button (top right)
                         Button(action: { 
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showingSettings = true 
@@ -163,8 +185,9 @@ struct ContentView: View {
                         .buttonStyle(.borderless)
                         .help("Settings")
                         .padding(.trailing, 16)
-                        .padding(.top, 12)
                     }
+                    .padding(.top, 12)
+                    
                     Spacer()
                 }
             }
