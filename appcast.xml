@@ -38,7 +38,7 @@
     <ns0:version>1.1.1</ns0:version>
     <ns0:shortVersionString>1.1.1</ns0:shortVersionString>
     <ns0:minimumSystemVersion>13.0</ns0:minimumSystemVersion>
-    <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.1.1/QuickTools-1.1.1.zip" ns0:edSignature="sparkle:edSignature=N2LdE5V5WGPmF9KYeI+OvpRct3Bd7IE0ojQ5Vhi99Dqem5RSNDAMTqEBr/VkKU/GA8Qci1dQnWRYx5XnDBQDDQ== length=3149049" length="3149049" type="application/octet-stream" />
+    <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.1.1/QuickTools-1.1.1.zip" ns0:edSignature="N2LdE5V5WGPmF9KYeI+OvpRct3Bd7IE0ojQ5Vhi99Dqem5RSNDAMTqEBr/VkKU/GA8Qci1dQnWRYx5XnDBQDDQ==" length="3149049" type="application/octet-stream" />
 </item><item>
             <title>QuickTools 1.0.0</title>
             <description>
