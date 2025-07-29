@@ -127,11 +127,11 @@ struct Base64EncoderView: View {
             Spacer()
         }
         .padding()
-        .onChange(of: isEncoding) { _, _ in
+        .onChange(of: isEncoding) { _ in
             outputText = ""
             errorMessage = ""
         }
-        .onChange(of: inputText) { _, _ in
+        .onChange(of: inputText) { _ in
             if inputText.isEmpty {
                 outputText = ""
                 errorMessage = ""

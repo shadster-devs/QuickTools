@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct CodeSnippet: Identifiable, Codable {
-    let id = UUID()
+    let id: UUID
     var title: String
     var content: String
     let createdAt: Date
     var updatedAt: Date
     
     init(title: String, content: String) {
+        self.id = UUID()
         self.title = title
         self.content = content
         self.createdAt = Date()

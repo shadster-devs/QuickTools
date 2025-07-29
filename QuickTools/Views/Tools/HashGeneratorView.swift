@@ -108,11 +108,11 @@ struct HashGeneratorView: View {
             Spacer()
         }
         .padding()
-        .onChange(of: isFileMode) { _, _ in
+        .onChange(of: isFileMode) { _ in
             clearHashes()
             selectedFileURL = nil
         }
-        .onChange(of: inputText) { _, _ in
+        .onChange(of: inputText) { _ in
             if inputText.isEmpty {
                 clearHashes()
             }

@@ -163,7 +163,7 @@ struct RegexTesterView: View {
             Spacer()
         }
         .padding()
-        .onChange(of: pattern) { _, _ in
+        .onChange(of: pattern) { _ in
             if !pattern.isEmpty && !testString.isEmpty {
                 testRegex()
             } else {
@@ -171,7 +171,7 @@ struct RegexTesterView: View {
                 errorMessage = ""
             }
         }
-        .onChange(of: testString) { _, _ in
+        .onChange(of: testString) { _ in
             if !pattern.isEmpty && !testString.isEmpty {
                 testRegex()
             } else {
@@ -179,12 +179,12 @@ struct RegexTesterView: View {
                 errorMessage = ""
             }
         }
-        .onChange(of: isCaseSensitive) { _, _ in
+        .onChange(of: isCaseSensitive) { _ in
             if !pattern.isEmpty && !testString.isEmpty {
                 testRegex()
             }
         }
-        .onChange(of: isMultiline) { _, _ in
+        .onChange(of: isMultiline) { _ in
             if !pattern.isEmpty && !testString.isEmpty {
                 testRegex()
             }

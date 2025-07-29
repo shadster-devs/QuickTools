@@ -14,7 +14,7 @@ struct ColorPickerView: View {
     @State private var colorHistory: [SavedColor] = []
     
     struct SavedColor: Identifiable, Codable {
-        let id = UUID()
+        let id: UUID
         let red: Double
         let green: Double
         let blue: Double
@@ -26,6 +26,7 @@ struct ColorPickerView: View {
         }
         
         init(color: Color) {
+            self.id = UUID()
             guard let nsColor = NSColor(color).usingColorSpace(.sRGB) else {
                 self.red = 0
                 self.green = 0
@@ -196,7 +197,7 @@ struct ColorPickerView: View {
         .onAppear {
             loadHistory()
         }
-        .onChange(of: selectedColor) { _, _ in
+        .onChange(of: selectedColor) { _ in
             errorMessage = ""
         }
     }

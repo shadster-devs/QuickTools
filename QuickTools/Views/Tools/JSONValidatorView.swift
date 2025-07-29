@@ -118,7 +118,7 @@ struct JSONValidatorView: View {
             Spacer()
         }
         .padding()
-        .onChange(of: inputText) { _, _ in
+        .onChange(of: inputText) { _ in
             if inputText.isEmpty {
                 outputText = ""
                 errorMessage = ""

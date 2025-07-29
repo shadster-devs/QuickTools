@@ -177,7 +177,7 @@ struct TimestampConverterView: View {
             Spacer()
         }
         .padding()
-        .onChange(of: timestampInput) { _, _ in
+        .onChange(of: timestampInput) { _ in
             if timestampInput.isEmpty {
                 convertedDate = ""
                 errorMessage = ""
