@@ -85,6 +85,24 @@ jobs:
         cd ./build
         zip -r "QuickTools-${{ steps.version.outputs.version }}.zip" QuickTools.app
         
+    - name: Create DMG for distribution
+      run: |
+        cd ./build
+        # Create a temporary directory for DMG contents
+        mkdir -p dmg_temp
+        cp -R QuickTools.app dmg_temp/
+        # Create a symbolic link to Applications folder
+        ln -s /Applications dmg_temp/Applications
+        # Create the DMG
+        hdiutil create -volname "QuickTools v${{ steps.version.outputs.version }}" \
+          -srcfolder dmg_temp \
+          -ov -format UDZO \
+          "QuickTools-${{ steps.version.outputs.version }}.dmg"
+        # Clean up temp directory
+        rm -rf dmg_temp
+        echo "✅ DMG created: QuickTools-${{ steps.version.outputs.version }}.dmg"
+        ls -la *.dmg
+        
     - name: Import Sparkle Private Key
       run: |
         echo "${{ secrets.SPARKLE_PRIVATE_KEY }}" > sparkle_private_key
@@ -143,10 +161,17 @@ jobs:
         
         $NOTES
         
+        ## Download Options
+        
+        ### 🚀 **Recommended: DMG Installer**
+        - **QuickTools-${{ steps.version.outputs.version }}.dmg** - Professional installer with drag-to-Applications experience
+        
+        ### 📦 **Alternative: ZIP Archive**  
+        - **QuickTools-${{ steps.version.outputs.version }}.zip** - Direct app bundle (used by auto-updater)
+        
         ## Installation
-        1. Download QuickTools-${{ steps.version.outputs.version }}.zip
-        2. Extract and move QuickTools.app to Applications
-        3. Launch QuickTools from your menu bar
+        **DMG**: Double-click and drag QuickTools to Applications folder  
+        **ZIP**: Extract and move QuickTools.app to Applications folder
         
         ## Automatic Updates
         This version supports automatic updates via Sparkle. Future updates will be delivered automatically.
@@ -164,7 +189,7 @@ jobs:
         draft: false
         prerelease: false
         
-    - name: Upload Release Asset
+    - name: Upload ZIP Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -173,6 +198,16 @@ jobs:
         asset_path: ./build/QuickTools-${{ steps.version.outputs.version }}.zip
         asset_name: QuickTools-${{ steps.version.outputs.version }}.zip
         asset_content_type: application/zip
+        
+    - name: Upload DMG Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./build/QuickTools-${{ steps.version.outputs.version }}.dmg
+        asset_name: QuickTools-${{ steps.version.outputs.version }}.dmg
+        asset_content_type: application/x-apple-diskimage
         
     - name: Update Appcast
       run: |
