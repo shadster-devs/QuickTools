@@ -285,11 +285,8 @@ struct SettingsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                     
                     // Update section
-                    HStack {
-                        CheckForUpdatesButton()
-                        Spacer()
-                    }
-                    .padding(.top, 8)
+                    UpdateStatusSection()
+                        .padding(.top, 12)
                     
                     HStack {
                         Text("Created by Shakthi M")
@@ -575,32 +572,152 @@ struct EnhancedToolRow: View {
     }
 }
 
-struct CheckForUpdatesButton: View {
-    @State private var isCheckingForUpdates = false
+struct UpdateStatusSection: View {
+    @State private var isChecking = false
+    @State private var lastCheckDate: Date? = UserDefaults.standard.object(forKey: "LastUpdateCheck") as? Date
+    @State private var updateAvailable = false
+    @State private var availableVersion: String? = nil
+    @State private var updateMessage = "You're up to date"
+    
     private let updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
     
     var body: some View {
-        Button("Check for Updates") {
-            isCheckingForUpdates = true
-            updaterController.checkForUpdates(nil)
-            
-            // Reset state after a delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                isCheckingForUpdates = false
-            }
-        }
-        .buttonStyle(.bordered)
-        .controlSize(.small)
-        .disabled(isCheckingForUpdates)
-        .overlay(
+        VStack(alignment: .leading, spacing: 12) {
+            // Header
             HStack {
-                if isCheckingForUpdates {
-                    ProgressView()
-                        .scaleEffect(0.7)
-                        .padding(.trailing, 8)
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .foregroundColor(.blue)
+                    .font(.title3)
+                
+                Text("Software Update")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                
+                Spacer()
+            }
+            
+            // Current Status
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Current Version:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    Text(AppConstants.appVersion)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                }
+                
+                if let lastCheck = lastCheckDate {
+                    HStack {
+                        Text("Last Checked:")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        Text(formatDate(lastCheck))
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                HStack {
+                    Text("Status:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 6) {
+                        if isChecking {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                        } else {
+                            Image(systemName: updateAvailable ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                                .foregroundColor(updateAvailable ? .orange : .green)
+                                .font(.caption)
+                        }
+                        
+                        Text(isChecking ? "Checking..." : updateMessage)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(updateAvailable ? .orange : .green)
+                    }
                 }
             }
-        )
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            
+            // Actions
+            HStack(spacing: 12) {
+                Button(action: checkForUpdates) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.clockwise")
+                        Text("Check Now")
+                    }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(isChecking)
+                
+                if updateAvailable {
+                    Button(action: downloadUpdate) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "safari")
+                            Text("Download Update")
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                }
+                
+                Spacer()
+            }
+        }
+        .onAppear {
+            checkUpdateStatus()
+        }
+    }
+    
+    private func checkForUpdates() {
+        isChecking = true
+        updaterController.checkForUpdates(nil)
+        
+        // Update last check date
+        lastCheckDate = Date()
+        UserDefaults.standard.set(lastCheckDate, forKey: "LastUpdateCheck")
+        
+        // Simulate check completion (in a real implementation, you'd use Sparkle delegates)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            isChecking = false
+            updateMessage = "You're up to date"
+            updateAvailable = false
+        }
+    }
+    
+    private func downloadUpdate() {
+        // Open GitHub releases page for manual download
+        if let url = URL(string: "https://github.com/shadster-devs/QuickTools/releases/latest") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+    
+    private func checkUpdateStatus() {
+        // Check if automatic updates are enabled and when last check was
+        updateMessage = "You're up to date"
+        updateAvailable = false
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }
 

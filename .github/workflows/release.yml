@@ -107,8 +107,9 @@ jobs:
         codesign -dv ./build/QuickTools.app
         echo "Signing ZIP with Sparkle..."
         SIGNATURE=$(/opt/homebrew/Caskroom/sparkle/2.7.1/bin/sign_update "./build/QuickTools-${{ steps.version.outputs.version }}.zip" --ed-key-file sparkle_private_key)
+        echo "Raw signature output: '$SIGNATURE'"
         echo "signature=$SIGNATURE" >> $GITHUB_OUTPUT
-        echo "Signature: $SIGNATURE"
+        echo "Signature stored for next step: $SIGNATURE"
         
     - name: Get file size
       id: filesize
@@ -179,6 +180,14 @@ jobs:
             """Update appcast.xml with new version entry"""
             
             print(f"Updating appcast for version {version}")
+            print(f"Raw signature input: {signature}")
+            
+            # Clean signature - remove any prefix/suffix that might be added by sign_update
+            if "sparkle:edSignature=" in signature:
+                signature = signature.split("sparkle:edSignature=")[1].split()[0]
+            signature = signature.strip().strip('"')
+            
+            print(f"Cleaned signature: {signature}")
             
             # Create new entry XML with current date
             current_date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S +0000')

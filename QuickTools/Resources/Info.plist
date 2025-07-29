@@ -34,5 +34,9 @@
 	<string>ha4xfstJ/bcxxzD6awrj3GjuG0z3CFSicDOkPYnJTXQ=</string>
 	<key>SUScheduledCheckInterval</key>
 	<integer>86400</integer>
+	<key>SUAllowsAutomaticUpdates</key>
+	<false/>
+	<key>SUEnableSystemProfiling</key>
+	<false/>
 </dict>
 </plist>
