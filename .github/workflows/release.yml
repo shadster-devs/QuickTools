@@ -135,7 +135,8 @@ jobs:
           
         echo "✅ Verifying final signature..."
         codesign --verify --deep --strict --verbose=2 QuickTools.app
-        spctl -a -t exec -vv QuickTools.app
+        echo "📋 Gatekeeper status (before notarization):"
+        spctl -a -t exec -vv QuickTools.app || echo "⚠️  Expected: App rejected until notarized"
           
     - name: Create ZIP for distribution
       run: |
