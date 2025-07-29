@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:ns0="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <title>QuickTools Updates</title>
         <description>Updates for QuickTools - Essential developer tools in your menu bar</description>
@@ -7,37 +7,44 @@
         <link>https://github.com/shadster-devs/QuickTools</link>
         
         <item>
+    <title>QuickTools 1.1.1</title>
+    <description>
+        &lt;h3&gt;QuickTools 1.1.1&lt;/h3&gt;
+        &lt;p&gt;New release of QuickTools with essential developer tools for your menu bar.&lt;/p&gt;
+    </description>
+    <pubDate>Tue, 29 Jul 2025 15:22:01 +0000</pubDate>
+    <ns0:version>1.1.1</ns0:version>
+    <ns0:shortVersionString>1.1.1</ns0:shortVersionString>
+    <ns0:minimumSystemVersion>13.0</ns0:minimumSystemVersion>
+    <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.1.1/QuickTools-1.1.1.zip" ns0:edSignature="sparkle:edSignature=N2LdE5V5WGPmF9KYeI+OvpRct3Bd7IE0ojQ5Vhi99Dqem5RSNDAMTqEBr/VkKU/GA8Qci1dQnWRYx5XnDBQDDQ== length=3149049" length="3149049" type="application/octet-stream" />
+</item><item>
             <title>QuickTools 1.0.0</title>
-            <description><![CDATA[
-                <h3>QuickTools 1.0.0</h3>
-                <p>Initial release with essential developer tools:</p>
-                <ul>
-                    <li>JSON Validator</li>
-                    <li>Regex Tester</li>
-                    <li>Base64 Encoder/Decoder</li>
-                    <li>URL Encoder/Decoder</li>
-                    <li>Hash Generator</li>
-                    <li>UUID Generator</li>
-                    <li>Color Picker</li>
-                    <li>Timestamp Converter</li>
-                    <li>QR Code Generator</li>
-                    <li>Text Diff</li>
-                    <li>Image Converter</li>
-                    <li>Snippet Store</li>
-                </ul>
-            ]]></description>
+            <description>
+                &lt;h3&gt;QuickTools 1.0.0&lt;/h3&gt;
+                &lt;p&gt;Initial release with essential developer tools:&lt;/p&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;JSON Validator&lt;/li&gt;
+                    &lt;li&gt;Regex Tester&lt;/li&gt;
+                    &lt;li&gt;Base64 Encoder/Decoder&lt;/li&gt;
+                    &lt;li&gt;URL Encoder/Decoder&lt;/li&gt;
+                    &lt;li&gt;Hash Generator&lt;/li&gt;
+                    &lt;li&gt;UUID Generator&lt;/li&gt;
+                    &lt;li&gt;Color Picker&lt;/li&gt;
+                    &lt;li&gt;Timestamp Converter&lt;/li&gt;
+                    &lt;li&gt;QR Code Generator&lt;/li&gt;
+                    &lt;li&gt;Text Diff&lt;/li&gt;
+                    &lt;li&gt;Image Converter&lt;/li&gt;
+                    &lt;li&gt;Snippet Store&lt;/li&gt;
+                &lt;/ul&gt;
+            </description>
             <pubDate>Mon, 01 Jan 2024 10:00:00 +0000</pubDate>
-            <sparkle:version>1.0.0</sparkle:version>
-            <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
-            <enclosure 
-                url="https://github.com/shadster-devs/QuickTools/releases/download/v1.0.0/QuickTools-1.0.0.zip"
-                sparkle:edSignature="PLACEHOLDER_SIGNATURE"
-                length="1000000"
-                type="application/octet-stream" />
+            <ns0:version>1.0.0</ns0:version>
+            <ns0:shortVersionString>1.0.0</ns0:shortVersionString>
+            <ns0:minimumSystemVersion>13.0</ns0:minimumSystemVersion>
+            <enclosure url="https://github.com/shadster-devs/QuickTools/releases/download/v1.0.0/QuickTools-1.0.0.zip" ns0:edSignature="PLACEHOLDER_SIGNATURE" length="1000000" type="application/octet-stream" />
         </item>
         
-        <!-- Future updates will be added here -->
+        
         
     </channel>
-</rss> 
+</rss>
