@@ -81,8 +81,8 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Settings")
-                        .font(.title2)
+                Text("Settings")
+                    .font(.title2)
                         .fontWeight(.bold)
                         .foregroundStyle(
                             LinearGradient(
@@ -119,7 +119,7 @@ struct SettingsView: View {
                 } else {
                     Button("Done") {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                            onClose?()
+                        onClose?()
                         }
                     }
                     .buttonStyle(.borderedProminent)
@@ -153,24 +153,24 @@ struct SettingsView: View {
                     subtitle: "Customize the visual theme",
                     color: .blue
                 )
-                
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Theme")
+                        
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Theme")
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                    
+                                .foregroundColor(.primary)
+                            
                     // Enhanced theme picker
                     HStack(spacing: 12) {
-                        ForEach(AppTheme.allCases, id: \.self) { theme in
+                                ForEach(AppTheme.allCases, id: \.self) { theme in
                             ThemeCard(
                                 theme: theme,
                                 isSelected: selectedTheme == theme
                             ) {
                                 withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                                    selectedTheme = theme
-                                    settingsManager.theme = theme
-                                    settingsManager.saveSettings()
+                                            selectedTheme = theme
+                                            settingsManager.theme = theme
+                                            settingsManager.saveSettings()
                                 }
                             }
                         }
@@ -182,9 +182,9 @@ struct SettingsView: View {
                         subtitle: "Display tool descriptions in the interface",
                         isOn: .constant(settingsManager.showToolDescriptions)
                     ) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            settingsManager.showToolDescriptions.toggle()
-                            settingsManager.saveSettings()
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        settingsManager.showToolDescriptions.toggle()
+                                        settingsManager.saveSettings()
                         }
                     }
                 }
@@ -204,11 +204,11 @@ struct SettingsView: View {
                 )
                 
                 VStack(spacing: 8) {
-                    ForEach(settingsManager.enabledTools.sorted { $0.order < $1.order }) { tool in
+                                ForEach(settingsManager.enabledTools.sorted { $0.order < $1.order }) { tool in
                         EnhancedToolRow(tool: tool)
-                            .environmentObject(settingsManager)
-                    }
-                }
+                                        .environmentObject(settingsManager)
+                                }
+                            }
             }
         }
     }
@@ -222,15 +222,15 @@ struct SettingsView: View {
                     subtitle: "Restore all settings to their default values",
                     color: .red
                 )
-                
-                Button("Reset to Defaults") {
-                    showingResetAlert = true
-                }
-                .buttonStyle(.bordered)
-                .foregroundColor(.red)
-                .controlSize(.large)
-            }
-        }
+                            
+                            Button("Reset to Defaults") {
+                                showingResetAlert = true
+                            }
+                            .buttonStyle(.bordered)
+                            .foregroundColor(.red)
+                            .controlSize(.large)
+                        }
+                    }
     }
     
     private var aboutSection: some View {
@@ -326,11 +326,11 @@ struct ModernCard<Content: View>: View {
     
     var body: some View {
         content
-            .padding(24)
-            .background(
+                    .padding(24)
+                    .background(
                 ZStack {
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(.ultraThinMaterial)
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(.ultraThinMaterial)
                     
                     RoundedRectangle(cornerRadius: 16)
                         .fill(
@@ -521,8 +521,8 @@ struct EnhancedToolRow: View {
                     .fill(tool.isEnabled ? .blue.opacity(0.1) : .secondary.opacity(0.05))
                     .frame(width: 32, height: 32)
                 
-                Image(systemName: tool.icon)
-                    .foregroundColor(tool.isEnabled ? .blue : .secondary)
+            Image(systemName: tool.icon)
+                .foregroundColor(tool.isEnabled ? .blue : .secondary)
                     .font(.system(size: 14, weight: .medium))
             }
             
