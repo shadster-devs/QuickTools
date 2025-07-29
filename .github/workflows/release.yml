@@ -109,8 +109,7 @@ jobs:
           --key-id "${{ secrets.NOTARIZE_APP_STORE_CONNECT_API_KEY_ID }}" \
           --issuer "${{ secrets.NOTARIZE_APP_STORE_CONNECT_ISSUER_ID }}" \
           --wait \
-          --timeout 1h \
-          --webhook-url-failure-retry-count 3
+          --timeout 1h
         
         echo "✅ Notarization completed successfully!"
         
