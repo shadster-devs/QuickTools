@@ -39,9 +39,16 @@ jobs:
         echo "Version: $VERSION"
         
     - name: Update version in project
+      id: update_version
       run: |
         # Update CFBundleShortVersionString in Info.plist
         /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.version }}" QuickTools/Resources/Info.plist
+        
+        # Generate and update build number (remove dots: 1.1.5 -> 115)
+        BUILD_NUMBER=$(echo "${{ steps.version.outputs.version }}" | sed 's/\.//g')
+        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" QuickTools/Resources/Info.plist
+        echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+        echo "Updated version: ${{ steps.version.outputs.version }}, build: $BUILD_NUMBER"
         
         # Update AppConstants.swift
         sed -i '' 's/static let appVersion = "[^"]*"/static let appVersion = "${{ steps.version.outputs.version }}"/' QuickTools/Models/AppConstants.swift
@@ -219,10 +226,10 @@ jobs:
         import os
         from datetime import datetime
         
-        def update_appcast(version, signature, filesize, repository):
+        def update_appcast(version, build_number, signature, filesize, repository):
             """Update appcast.xml with new version entry"""
             
-            print(f"Updating appcast for version {version}")
+            print(f"Updating appcast for version {version} (build {build_number})")
             print(f"Signature: {signature}")
             
             # Create new entry XML with current date
@@ -234,7 +241,7 @@ jobs:
                 <p>New release of QuickTools with essential developer tools for your menu bar.</p>
             ]]></description>
             <pubDate>{current_date}</pubDate>
-            <sparkle:version>{version}</sparkle:version>
+            <sparkle:version>{build_number}</sparkle:version>
             <sparkle:shortVersionString>{version}</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
             <enclosure 
@@ -308,24 +315,25 @@ jobs:
                 return False
         
         if __name__ == "__main__":
-            if len(sys.argv) != 5:
-                print("Usage: python3 update_appcast.py <version> <signature> <filesize> <repository>")
+            if len(sys.argv) != 6:
+                print("Usage: python3 update_appcast.py <version> <build_number> <signature> <filesize> <repository>")
                 sys.exit(1)
             
             version = sys.argv[1]
-            signature = sys.argv[2]
-            filesize = sys.argv[3]
-            repository = sys.argv[4]
+            build_number = sys.argv[2]
+            signature = sys.argv[3]
+            filesize = sys.argv[4]
+            repository = sys.argv[5]
             
-            success = update_appcast(version, signature, filesize, repository)
+            success = update_appcast(version, build_number, signature, filesize, repository)
             if not success:
                 sys.exit(1)
             
-            print(f"🎉 Successfully updated appcast for version {version}")
+            print(f"🎉 Successfully updated appcast for version {version} (build {build_number})")
         EOF
         
         # Run the appcast update script
-        python3 update_appcast.py "${{ steps.version.outputs.version }}" "${{ steps.sign.outputs.signature }}" "${{ steps.filesize.outputs.size }}" "${{ github.repository }}"
+        python3 update_appcast.py "${{ steps.version.outputs.version }}" "${{ steps.update_version.outputs.build_number }}" "${{ steps.sign.outputs.signature }}" "${{ steps.filesize.outputs.size }}" "${{ github.repository }}"
         
     - name: Commit and push updated appcast
       run: |
