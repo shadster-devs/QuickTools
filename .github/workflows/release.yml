@@ -102,33 +102,79 @@ jobs:
       run: |
         cd ./build
         
-        echo "🔧 Re-signing all frameworks with hardened runtime..."
-        # Find and sign all frameworks
-        find QuickTools.app -name "*.framework" -type d | while read framework; do
+        echo "🔧 Deep signing for notarization - following Apple's best practices..."
+        
+        # Step 1: Sign all nested executables and XPC services first (deepest first)
+        echo "Step 1: Signing XPC services and nested executables..."
+        find QuickTools.app -name "*.xpc" -type d | while read xpc; do
+          if [ -d "$xpc/Contents/MacOS" ]; then
+            for binary in "$xpc"/Contents/MacOS/*; do
+              if [ -f "$binary" ] && file "$binary" | grep -q "Mach-O"; then
+                echo "Signing XPC binary: $binary"
+                codesign --force --timestamp --options runtime \
+                  --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+                  "$binary"
+              fi
+            done
+            echo "Signing XPC service: $xpc"
+            codesign --force --timestamp --options runtime \
+              --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+              "$xpc"
+          fi
+        done
+        
+        # Step 2: Sign helper apps (like Sparkle Updater.app)
+        echo "Step 2: Signing helper applications..."
+        find QuickTools.app -name "*.app" -not -path "*/MacOS/QuickTools" -type d | while read app; do
+          if [ -d "$app/Contents/MacOS" ]; then
+            for binary in "$app"/Contents/MacOS/*; do
+              if [ -f "$binary" ] && file "$binary" | grep -q "Mach-O"; then
+                echo "Signing helper app binary: $binary"
+                codesign --force --timestamp --options runtime \
+                  --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+                  "$binary"
+              fi
+            done
+            echo "Signing helper app: $app"
+            codesign --force --timestamp --options runtime \
+              --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+              "$app"
+          fi
+        done
+        
+        # Step 3: Sign all standalone executables and dylibs in frameworks
+        echo "Step 3: Signing framework executables and libraries..."
+        find QuickTools.app/Contents/Frameworks -type f \( -name "*.dylib" -o -perm +111 \) | while read binary; do
+          if file "$binary" | grep -q "Mach-O"; then
+            # Skip if it's inside an .app or .xpc (already signed above)
+            if [[ ! "$binary" =~ \.app/ ]] && [[ ! "$binary" =~ \.xpc/ ]]; then
+              echo "Signing framework binary: $binary"
+              codesign --force --timestamp --options runtime \
+                --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+                "$binary"
+            fi
+          fi
+        done
+        
+        # Step 4: Sign frameworks themselves
+        echo "Step 4: Signing frameworks..."
+        find QuickTools.app/Contents/Frameworks -name "*.framework" -type d | while read framework; do
           echo "Signing framework: $framework"
-          codesign --force --verify --verbose --timestamp \
-            --options runtime \
-            --entitlements ../QuickTools/Resources/QuickTools.entitlements \
+          codesign --force --timestamp --options runtime \
             --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
             "$framework"
         done
         
-        echo "🔧 Re-signing all dylibs and executables..."
-        # Sign all dylibs and executables in frameworks
-        find QuickTools.app -type f \( -name "*.dylib" -o -perm +111 \) | while read binary; do
-          if file "$binary" | grep -q "Mach-O"; then
-            echo "Signing binary: $binary"
-            codesign --force --verify --verbose --timestamp \
-              --options runtime \
-              --entitlements ../QuickTools/Resources/QuickTools.entitlements \
-              --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
-              "$binary" || echo "Warning: Could not sign $binary"
-          fi
-        done
+        # Step 5: Sign main app executable
+        echo "Step 5: Signing main executable..."
+        codesign --force --timestamp --options runtime \
+          --entitlements ../QuickTools/Resources/QuickTools.entitlements \
+          --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
+          QuickTools.app/Contents/MacOS/QuickTools
         
-        echo "🔧 Re-signing main app bundle..."
-        codesign --force --verify --verbose --timestamp \
-          --options runtime \
+        # Step 6: Sign main app bundle (final step)
+        echo "Step 6: Signing main app bundle..."
+        codesign --force --timestamp --options runtime \
           --entitlements ../QuickTools/Resources/QuickTools.entitlements \
           --sign "Developer ID Application: Shakthi Sagar M (${{ secrets.TEAM_ID }})" \
           QuickTools.app
