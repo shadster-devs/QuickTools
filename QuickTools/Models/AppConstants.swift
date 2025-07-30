@@ -10,7 +10,7 @@ import SwiftUI
 enum AppConstants {
     // MARK: - App Info
     static let appName = "QuickTools"
-    static let appVersion = "1.3.2"
+    static let appVersion = "1.3.0"
     static let appDescription = "Essential developer tools in your menu bar"
     
     // MARK: - UI Constants
