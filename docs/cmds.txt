@@ -1,1 +1,0 @@
-defaults delete shadster-devs.QuickTools enabledTools
